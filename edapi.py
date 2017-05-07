@@ -13,7 +13,7 @@ import traceback
 import companion
 import eddn
 
-__version_info__ = ('4', '0', '0')
+__version_info__ = ('4', '0', '1')
 __version__ = '.'.join(__version_info__)
 
 # ----------------------------------------------------------------
@@ -335,7 +335,7 @@ def Main():
     print('Commander:', c.OKGREEN+api.profile['commander']['name']+c.ENDC)
     print('Credits  : {:>12,d}'.format(api.profile['commander']['credits']))
     print('Debt     : {:>12,d}'.format(api.profile['commander']['debt']))
-    print('Capacity : {} tons'.format(api.profile['ship']['cargo']['capacity']))  # NOQA
+    #print('Capacity : {} tons'.format(api.profile['ship']['cargo']['capacity']))  # NOQA
     print("+------------+------------------+---+")  # NOQA
     print("|  Rank Type |        Rank Name | # |")  # NOQA
     print("+------------+------------------+---+")  # NOQA
