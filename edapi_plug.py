@@ -25,7 +25,7 @@ import transfers
 from collections import namedtuple
 
 
-__version_info__ = ('4', '0', '1')
+__version_info__ = ('4', '0', '2')
 __version__ = '.'.join(__version_info__)
 
 # ----------------------------------------------------------------
@@ -700,9 +700,10 @@ class ImportPlugin(plugins.ImportPluginBase):
             ('ships' in api.profile['lastStarport'])
         ):
             if 'shipyard_list' in api.profile['lastStarport']['ships']:
-                for ship in api.profile['lastStarport']['ships']['shipyard_list'].values():
-                    shipList.append(shipMap.mapID(ship['id'], ship['name']))
-                    eddn_ships.append(ship['name'])
+                if len(api.profile['lastStarport']['ships']['shipyard_list']):
+                    for ship in api.profile['lastStarport']['ships']['shipyard_list'].values():
+                        shipList.append(shipMap.mapID(ship['id'], ship['name']))
+                        eddn_ships.append(ship['name'])
 
             if 'unavailable_list' in api.profile['lastStarport']['ships']:
                 for ship in api.profile['lastStarport']['ships']['unavailable_list']:
