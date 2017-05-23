@@ -489,11 +489,11 @@ class ImportPlugin(plugins.ImportPluginBase):
 
         warning = False
         if defStation.outfitting != defOutfitting:
-            warning = warnAPIResponse('outfitting', defStation.outfitting)
+            warning |= warnAPIResponse('outfitting', defStation.outfitting)
         if defStation.shipyard != defShipyard:
-            warning = warnAPIResponse('shipyard', defStation.shipyard)
+            warning |= warnAPIResponse('shipyard', defStation.shipyard)
         if defStation.market != defMarket:
-            warning = warnAPIResponse('market', defStation.market)
+            warning |= warnAPIResponse('market', defStation.market)
         if warning:
             tdenv.WARN("Please update station data with correct values.")
             tdenv.WARN("(Fields will be marked with an leading asterisk '*')")
