@@ -522,8 +522,8 @@ class ImportPlugin(plugins.ImportPluginBase):
                 ('Planetary.....(y,n) ', 'planetary',   defStation.planetary),
                 ('B/Market......(y,n) ', 'blackMarket', defStation.blackMarket),
                 ('Refuel........(y,n) ', 'refuel',      defStation.refuel),
-                ('Restock.......(y,n) ', 'rearm',       defStation.rearm),
                 ('Repair........(y,n) ', 'repair',      defStation.repair),
+                ('Restock.......(y,n) ', 'rearm',       defStation.rearm),
                 ('Outfitting....(y,n) ', 'outfitting',  defOutfitting),
                 ('Shipyard......(y,n) ', 'shipyard',    defShipyard),
                 ('Market........(y,n) ', 'market',      defMarket),
@@ -553,8 +553,8 @@ class ImportPlugin(plugins.ImportPluginBase):
             print(" Planetary.:", _detail(station.planetary, tdb.planetStates))
             print(" B/Market..:", _detail(station.blackMarket, tdb.marketStates))
             print(" Refuel....:", _detail(station.refuel, tdb.marketStates))
-            print(" Restock...:", _detail(station.rearm, tdb.marketStates))
             print(" Repair....:", _detail(station.repair, tdb.marketStates))
+            print(" Restock...:", _detail(station.rearm, tdb.marketStates))
             print(" Outfitting:", _detail(station.outfitting, tdb.marketStates))
             print(" Shipyard..:", _detail(station.shipyard, tdb.marketStates))
             print(" Market....:", _detail(station.market, tdb.marketStates))
