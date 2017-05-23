@@ -25,7 +25,7 @@ import transfers
 from collections import namedtuple
 
 
-__version_info__ = ('4', '1', '0')
+__version_info__ = ('4', '1', '1')
 __version__ = '.'.join(__version_info__)
 
 # ----------------------------------------------------------------
@@ -480,11 +480,16 @@ class ImportPlugin(plugins.ImportPluginBase):
         else:
             print('Station known.')
             defStation = stnDefault(
-                lsFromStar  = station.lsFromStar, market     = station.market,
-                blackMarket = station.blackMarket,shipyard   = station.shipyard,
-                maxPadSize  = station.maxPadSize, outfitting = station.outfitting,
-                rearm       = station.rearm,      refuel     = station.refuel,
-                repair      = station.repair,     planetary  = station.planetary,
+                lsFromStar = station.lsFromStar,
+                market = defMarket if station.market == "?" else station.market,
+                blackMarket = station.blackMarket,
+                shipyard = defShipyard if station.shipyard == "?" else station.shipyard,
+                maxPadSize = station.maxPadSize,
+                outfitting = defOutfitting if station.outfitting == "?" else station.outfitting,
+                rearm = station.rearm,
+                refuel = station.refuel,
+                repair = station.repair,
+                planetary = station.planetary,
             )
 
         warning = False
