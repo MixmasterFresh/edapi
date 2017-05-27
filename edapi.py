@@ -13,7 +13,7 @@ import traceback
 import companion
 import eddn
 
-__version_info__ = ('4', '0', '1')
+__version_info__ = ('4', '0', '2')
 __version__ = '.'.join(__version_info__)
 
 # ----------------------------------------------------------------
@@ -421,9 +421,10 @@ def Main():
 
         # Ships that can be purchased.
         if 'shipyard_list' in api.profile['lastStarport']['ships']:
-            for ship in api.profile['lastStarport']['ships']['shipyard_list'].values():  # NOQA
-                # Add to EDDN.
-                eddn_ships.append(ship['name'])
+            if len(api.profile['lastStarport']['ships']['shipyard_list']):
+                for ship in api.profile['lastStarport']['ships']['shipyard_list'].values():  # NOQA
+                    # Add to EDDN.
+                    eddn_ships.append(ship['name'])
 
         # Ships that are restricted.
         if 'unavailable_list' in api.profile['lastStarport']['ships']:
