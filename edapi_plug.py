@@ -25,7 +25,7 @@ import transfers
 from collections import namedtuple
 
 
-__version_info__ = ('4', '1', '1')
+__version_info__ = ('4', '1', '2')
 __version__ = '.'.join(__version_info__)
 
 # ----------------------------------------------------------------
@@ -116,8 +116,15 @@ class EDAPI:
             self.profile = response.json()
             self.text    = response.text
         except:
-            sys.exit('Unable to parse JSON response for /profile!\
-                     Try with --debug and report this.')
+            if self.debug:
+                print('   URL:', response.url)
+                print('status:', response.status_code)
+                print('  text:', response.text)
+            sys.exit(
+                "Unable to parse JSON response for /profile!"
+                "\nTry to relogin with the 'login' option."
+                "{}".format("" if self.debug else "\nTry with --debug and report this.")
+            )
 
     def _getBasicURI(self, uri, values=None):
         '''
@@ -405,6 +412,7 @@ class ImportPlugin(plugins.ImportPluginBase):
         'save': 'Save the API response (tmp/profile.YYYYMMDD_HHMMSS.json).',
         'test': 'Test the plugin with a json file (test=[FILENAME]).',
         'warn': 'Ask for station update if a API<->DB diff is encountered.',
+        'login': 'Ask for login credentials.',
     }
 
     cookieFile = "edapi.cookies"
@@ -651,7 +659,11 @@ class ImportPlugin(plugins.ImportPluginBase):
                     "JSON-file '{}' not found.".format(str(proPath))
                 )
         else:
-            api = EDAPI(cookiefile=str(self.cookiePath))
+            api = EDAPI(
+                cookiefile=str(self.cookiePath),
+                login=self.getOption('login'),
+                debug=tdenv.debug,
+            )
         self.edAPI = api
 
         # Sanity check that the commander is docked. Otherwise we will get a
