@@ -13,7 +13,7 @@ import traceback
 import companion
 import eddn
 
-__version_info__ = ('4', '0', '2')
+__version_info__ = ('4', '1', '0')
 __version__ = '.'.join(__version_info__)
 
 # ----------------------------------------------------------------
@@ -437,7 +437,7 @@ def Main():
     if 'modules' in api.profile['lastStarport']:
         # For EDDN, only add non-commander specific items that can be
         # purchased.
-        # https://github.com/jamesremuscat/EDDN/wiki
+        # https://github.com/EDSM-NET/EDDN/wiki
         for module in api.profile['lastStarport']['modules'].values():
             if (
                 module.get('sku', None) in (

@@ -1,7 +1,7 @@
 """
 Python Implementation of the EDDN publisher:
 
-https://github.com/jamesremuscat/EDDN/blob/master/examples/PHP/EDDN.php
+https://github.com/EDSM-NET/EDDN/blob/master/examples/PHP/EDDN.php
 """
 
 from datetime import datetime, timezone
@@ -13,23 +13,23 @@ import requests
 
 class EDDN:
     _gateways = (
-        'http://eddn-gateway.elite-markets.net:8080/upload/',
+        'https://eddn.edcd.io:4430/upload/',
         # 'http://eddn-gateway.ed-td.space:8080/upload/',
     )
 
     _commodity_schemas = {
-        'production': 'http://schemas.elite-markets.net/eddn/commodity/3',
-        'test': 'http://schemas.elite-markets.net/eddn/commodity/3/test',
+        'production': 'https://eddn.edcd.io/schemas/commodity/3',
+        'test': 'https://eddn.edcd.io/schemas/commodity/3/test',
     }
 
     _shipyard_schemas = {
-        'production': 'http://schemas.elite-markets.net/eddn/shipyard/2',
-        'test': 'http://schemas.elite-markets.net/eddn/shipyard/2/test',
+        'production': 'https://eddn.edcd.io/schemas/shipyard/2',
+        'test': 'https://eddn.edcd.io/schemas/shipyard/2/test',
     }
 
     _outfitting_schemas = {
-        'production': 'http://schemas.elite-markets.net/eddn/outfitting/2',
-        'test': 'http://schemas.elite-markets.net/eddn/outfitting/2/test',
+        'production': 'https://eddn.edcd.io/schemas/outfitting/2',
+        'test': 'https://eddn.edcd.io/schemas/outfitting/2/test',
     }
 
     _debug = True

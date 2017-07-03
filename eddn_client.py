@@ -13,7 +13,7 @@ import traceback
 import zlib
 import zmq
 
-__version_info__ = ('3', '4', '0')
+__version_info__ = ('3', '5', '0')
 __version__ = '.'.join(__version_info__)
 
 
@@ -46,7 +46,7 @@ def parse_args():
 
     # relay
     parser.add_argument("--relay",
-                        default="tcp://eddn-relay.elite-markets.net:9500",
+                        default="tcp://eddn.edcd.io:9500",
                         help='EDDN relay to connect to.')
     # timeout
     parser.add_argument("--timeout",
@@ -98,11 +98,16 @@ def Main():
     Main()
     '''
     # These are the schemas we will decode.
+    # Accept old and new shema names until 2017-08-09 (Server Migration)
     allowed_schemas = {
         'http://schemas.elite-markets.net/eddn/commodity/3':  'commodity-v3',
         'http://schemas.elite-markets.net/eddn/journal/1':    'journal-v1',
         'http://schemas.elite-markets.net/eddn/outfitting/2': 'outfitting-v2',
         'http://schemas.elite-markets.net/eddn/shipyard/2':   'shipyard-v2',
+        'https://eddn.edcd.io/schemas/commodity/3':           'commodity-v3',
+        'https://eddn.edcd.io/schemas/journal/1':             'journal-v1',
+        'https://eddn.edcd.io/schemas/outfitting/2':          'outfitting-v2',
+        'https://eddn.edcd.io/schemas/shipyard/2':            'shipyard-v2',
     }
 
     # If debug, only listen for test type messages.
