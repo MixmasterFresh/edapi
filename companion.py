@@ -90,8 +90,32 @@ class EDAPI:
         try:
             self.profile = response.json()
         except:
-            sys.exit('Unable to parse JSON response for /profile!\
-                     Try with --debug and report this.')
+            if self.debug:
+                print('   URL:', response.url)
+                print('status:', response.status_code)
+                print(' text:', response.text)
+            sys.exit(
+                "Unable to parse JSON response for /profile!"
+                "\nTry to relogin with the --login option."
+                "\n{}".format("" if self.debug else "\nTry with --debug and report this.")  # NOQA
+            )
+
+        # Grab the market and shipyard data
+        for dataUrl in ("market", "shipyard"):
+            response = self._getURI(dataUrl)
+            try:
+                jsonData = response.json()
+                if int(jsonData["id"]) == int(self.profile["lastStarport"]["id"]):  # NOQA
+                    self.profile["lastStarport"].update(jsonData)
+            except:
+                if self.debug:
+                    print('   URL:', response.url)
+                    print('status:', response.status_code)
+                    print('  text:', response.text)
+                sys.exit(
+                    "Unable to parse JSON response for /{}!"
+                    "{}".format(dataUrl, "" if self.debug else "\nTry with --debug and report this.")  # NOQA
+                )
 
     def _getBasicURI(self, uri, values=None):
         '''

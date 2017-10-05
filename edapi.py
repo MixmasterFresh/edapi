@@ -13,7 +13,7 @@ import traceback
 import companion
 import eddn
 
-__version_info__ = ('4', '1', '0')
+__version_info__ = ('4', '3', '0')
 __version__ = '.'.join(__version_info__)
 
 # ----------------------------------------------------------------
@@ -152,8 +152,7 @@ def parse_args():
                         action="store_true",
                         default=False,
                         help="Output a file that sets environment variables\
-                        for current cargo capacity, credits, and current\
-                        system/station.")
+                        for credits and current system/station.")
 
     # Import from JSON
     parser.add_argument("--import",
@@ -335,10 +334,9 @@ def Main():
     print('Commander:', c.OKGREEN+api.profile['commander']['name']+c.ENDC)
     print('Credits  : {:>12,d}'.format(api.profile['commander']['credits']))
     print('Debt     : {:>12,d}'.format(api.profile['commander']['debt']))
-    #print('Capacity : {} tons'.format(api.profile['ship']['cargo']['capacity']))  # NOQA
-    print("+------------+------------------+---+")  # NOQA
-    print("|  Rank Type |        Rank Name | # |")  # NOQA
-    print("+------------+------------------+---+")  # NOQA
+    print("+------------+----------------------+---+")  # NOQA
+    print("|  Rank Type |            Rank Name | # |")  # NOQA
+    print("+------------+----------------------+---+")  # NOQA
     for rankType in sorted(api.profile['commander']['rank']):
         rank = api.profile['commander']['rank'][rankType]
         if rankType in rank_names:
@@ -348,13 +346,13 @@ def Main():
                 rankName = "Rank "+str(rank)
         else:
             rankName = ''
-        print("| {:>10} | {:>16} | {:1} |".format(
+        print("| {:>10} | {:>20} | {:1} |".format(
             rankType,
             rankName,
             rank,
             )
         )
-    print("+------------+------------------+---+")  # NOQA
+    print("+------------+----------------------+---+")  # NOQA
     print('Docked:', api.profile['commander']['docked'])
 
     system = api.profile['lastSystem']['name']
@@ -375,11 +373,6 @@ def Main():
             myfile.write(
                 'export TDCREDITS={}\n'.format(
                     api.profile['commander']['credits']
-                )
-            )
-            myfile.write(
-                'export TDCAP={}\n'.format(
-                    api.profile['ship']['cargo']['capacity']
                 )
             )
 
