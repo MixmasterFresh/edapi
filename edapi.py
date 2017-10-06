@@ -13,7 +13,7 @@ import traceback
 import companion
 import eddn
 
-__version_info__ = ('4', '3', '0')
+__version_info__ = ('4', '3', '1')
 __version__ = '.'.join(__version_info__)
 
 # ----------------------------------------------------------------
@@ -392,6 +392,10 @@ def Main():
             if commodity['categoryname'] in cat_ignore:
                 continue
 
+            # Ignore any illegal commodities per schema.
+            if commodity.get('legality', '') != '':
+                continue
+
             # Add it to the EDDN list.
             if args.eddn:
                 itemEDDN = {
@@ -407,6 +411,32 @@ def Main():
                 if len(commodity['statusFlags']) > 0:
                     itemEDDN["statusFlags"] = commodity['statusFlags']
                 eddn_commodities.append(itemEDDN)
+
+    # Process the station economies.
+    eddn_economies = []
+    if 'economies' in api.profile['lastStarport']:
+
+        def economy_number(key):
+            try:
+                ret = float(economy[key])
+            except (ValueError, KeyError):
+                ret = 0
+            return ret
+
+        for economy in api.profile['lastStarport']['economies'].values():
+            # Add it to the EDDN list.
+            if args.eddn:
+                itemEDDN = {
+                    "name":         economy['name'],
+                    "proportion":   economy_number('proportion'),
+                }
+                eddn_economies.append(itemEDDN)
+
+    # Process the station prohibited commodities.
+    eddn_prohibited = []
+    if 'prohibited' in api.profile['lastStarport']:
+        if args.eddn:
+            eddn_prohibited = [c for c in api.profile['lastStarport']['prohibited'].values()] #NOQA
 
     # Process shipyard.
     eddn_ships = []
@@ -460,7 +490,9 @@ def Main():
             con.publishCommodities(
                 system,
                 station,
-                eddn_commodities
+                eddn_commodities,
+                eddn_economies,
+                eddn_prohibited,
             )
 
         if eddn_ships:

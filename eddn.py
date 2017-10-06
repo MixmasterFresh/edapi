@@ -101,6 +101,8 @@ class EDDN:
         systemName,
         stationName,
         commodities,
+        economies,
+        prohibited,
         timestamp=0
     ):
         message = {}
@@ -117,6 +119,8 @@ class EDDN:
             'systemName': systemName,
             'stationName': stationName,
             'commodities': commodities,
+            'economies': economies,
+            'prohibited': prohibited,
         }
 
         self.postMessage(message, timestamp)

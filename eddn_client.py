@@ -13,7 +13,7 @@ import traceback
 import zlib
 import zmq
 
-__version_info__ = ('3', '5', '0')
+__version_info__ = ('3', '6', '0')
 __version__ = '.'.join(__version_info__)
 
 
@@ -98,12 +98,7 @@ def Main():
     Main()
     '''
     # These are the schemas we will decode.
-    # Accept old and new shema names until 2017-08-09 (Server Migration)
     allowed_schemas = {
-        'http://schemas.elite-markets.net/eddn/commodity/3':  'commodity-v3',
-        'http://schemas.elite-markets.net/eddn/journal/1':    'journal-v1',
-        'http://schemas.elite-markets.net/eddn/outfitting/2': 'outfitting-v2',
-        'http://schemas.elite-markets.net/eddn/shipyard/2':   'shipyard-v2',
         'https://eddn.edcd.io/schemas/commodity/3':           'commodity-v3',
         'https://eddn.edcd.io/schemas/journal/1':             'journal-v1',
         'https://eddn.edcd.io/schemas/outfitting/2':          'outfitting-v2',
@@ -112,10 +107,11 @@ def Main():
 
     # If debug, only listen for test type messages.
     if args.debug:
+        new_schemas = {}
         for key, name in allowed_schemas.items():
-            del allowed_schemas[key]
             key += '/test'
-            allowed_schemas[key] = name
+            new_schemas[key] = name
+        allowed_schemas = new_schemas
 
     echoLog('Starting EDDN Subscriber...')
     echoLog('')
@@ -198,6 +194,7 @@ def Main():
 
                 # Handle commodity v3
                 if schema == 'commodity-v3':
+                    echoLog('\t\t- Commodities:')
                     for com in message['message']['commodities']:
                         echoLog(
                             '\t\t\t- Name: ' +
@@ -224,6 +221,21 @@ def Main():
                             ' (' +
                             str(com.get('demandBracket', 'N/A')) +
                             ')'
+                        )
+                    echoLog('\t\t- Economies:')
+                    for econ in message['message']['economies']:
+                        echoLog(
+                            '\t\t\t- Name: ' +
+                            econ['name']
+                        )
+                        echoLog(
+                            '\t\t\t\t- Proportion: ' +
+                            str(econ['proportion'])
+                        )
+                    echoLog('\t\t- Prohibited:')
+                    for com in message['message']['prohibited']:
+                        echoLog(
+                            '\t\t\t- ' + com
                         )
 
                     echoLog('')
