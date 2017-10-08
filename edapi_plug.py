@@ -25,7 +25,7 @@ import transfers
 from collections import namedtuple
 
 
-__version_info__ = ('4', '3', '0')
+__version_info__ = ('4', '3', '1')
 __version__ = '.'.join(__version_info__)
 
 # ----------------------------------------------------------------
@@ -125,24 +125,24 @@ class EDAPI:
                 "\nTry to relogin with the 'login' option."
                 "{}".format("" if self.debug else "\nTry with --debug and report this.")
             )
-
-        # Grab the market and shipyard data
-        for dataUrl in ("market", "shipyard"):
-            response = self._getURI(dataUrl)
-            try:
-                jsonData = response.json()
-                self.text.append(response.text)
-                if int(jsonData["id"]) == int(self.profile["lastStarport"]["id"]):
-                    self.profile["lastStarport"].update(jsonData)
-            except:
-                if self.debug:
-                    print('   URL:', response.url)
-                    print('status:', response.status_code)
-                    print('  text:', response.text)
-                sys.exit(
-                    "Unable to parse JSON response for /{}!"
+        # Grab the market and shipyard data (if docked)
+                if self.profile['commander']['docked']:
+            for dataUrl in ("market", "shipyard"):
+                response = self._getURI(dataUrl)
+                try:
+                    jsonData = response.json()
+                    self.text.append(response.text)
+                    if int(jsonData["id"]) == int(self.profile["lastStarport"]["id"]):
+                        self.profile["lastStarport"].update(jsonData)
+                except:
+                    if self.debug:
+                        print('   URL:', response.url)
+                        print('status:', response.status_code)
+                        print('  text:', response.text)
+                    sys.exit(
+                        "Unable to parse JSON response for /{}!"
                     "{}".format(dataUrl, "" if self.debug else "\nTry with --debug and report this.")
-                )
+                    )
 
     def _getBasicURI(self, uri, values=None):
         '''
