@@ -5,3 +5,4 @@ old/
 *.cookies
 *.vars
 test*.py
+.vscode

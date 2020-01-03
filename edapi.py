@@ -4,274 +4,25 @@
 # ----------------------------------------------------------------
 
 from pprint import pprint
-import argparse
 import json
-import platform
 import sys
 import traceback
 
-import companion
-import eddn
+import api.companion as companion
+import api.parse as parse
+import eddn.eddn as eddn
+
+from utils.args import parse_args
+from utils.const import cat_ignore, bracket_levels, rank_names
+from utils.ansiColors import ansiColors
+from utils.print_profile import print_profile
+
 
 __version_info__ = ('4', '3', '1')
 __version__ = '.'.join(__version_info__)
 
-# ----------------------------------------------------------------
-# Deal with some differences in names between TD, ED and the API.
-# ----------------------------------------------------------------
 
-# Categories to ignore. Commander specific stuff, like limpets.
-cat_ignore = [
-    'NonMarketable',
-]
-
-# ----------------------------------------------------------------
-# Some lookup tables.
-# ----------------------------------------------------------------
-
-bracket_levels = ('-', 'L', 'M', 'H')
-
-rank_names = {
-    'combat': (
-        'Harmless',
-        'Mostly Harmless',
-        'Novice',
-        'Competent',
-        'Expert',
-        'Master',
-        'Dangerous',
-        'Deadly',
-        'Elite',
-    ),
-    'crime': (
-        'Rank 0',
-    ),
-    'empire': (
-        'None',
-        'Outsider',
-        'Serf',
-        'Master',
-        'Squire',
-        'Knight',
-        'Lord',
-        'Baron',
-        'Viscount',
-        'Count',
-        'Earl',
-        'Marquis',
-        'Duke',
-        'Prince',
-        'King',
-    ),
-    'explore': (
-        'Aimless',
-        'Mostly Aimless',
-        'Scout',
-        'Surveyor',
-        'Trailblazer',
-        'Pathfinder',
-        'Ranger',
-        'Starblazer',
-        'Elite',
-    ),
-    'federation': (
-        'None',
-        'Recruit',
-        'Cadet',
-        'Midshipman',
-        'Petty Officer',
-        'Chief Petty Officer',
-        'Warrant Officer',
-        'Ensign',
-        'Lieutenant',
-        'Lieutenant Commander',
-        'Post Commander',
-        'Post Captain',
-        'Rear Admiral',
-        'Vice Admiral',
-        'Admiral',
-    ),
-    'service': (
-        'Rank 0',
-    ),
-    'trade': (
-        'Penniless',
-        'Mostly Penniless',
-        'Pedlar',
-        'Dealer',
-        'Merchant',
-        'Broker',
-        'Entrepreneur',
-        'Tycoon',
-        'Elite',
-    ),
-}
-
-# ----------------------------------------------------------------
-# Functions.
-# ----------------------------------------------------------------
-
-
-def parse_args():
-    '''
-    Parse arguments.
-    '''
-    # Basic argument parsing.
-    parser = argparse.ArgumentParser(
-        description='EDAPI: Elite Dangerous API Tool',
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-    )
-
-    # Version
-    parser.add_argument('--version',
-                        action='version',
-                        version='%(prog)s '+__version__)
-
-    # Debug
-    parser.add_argument("--debug",
-                        action="store_true",
-                        default=False,
-                        help="Output additional debug info.")
-
-    # colors
-    default = (platform.system() == 'Windows')
-    parser.add_argument("--no-color",
-                        dest="nocolor",
-                        action="store_true",
-                        default=default,
-                        help="Disable the use of ansi colors in output.")
-
-    # Base file name.
-    parser.add_argument("--basename",
-                        default="edapi",
-                        help='Base file name. This is used to construct the\
-                        cookie and vars file names.')
-
-    # vars file
-    parser.add_argument("--vars",
-                        action="store_true",
-                        default=False,
-                        help="Output a file that sets environment variables\
-                        for credits and current system/station.")
-
-    # Import from JSON
-    parser.add_argument("--import",
-                        metavar="FILE",
-                        dest="json_file",
-                        default=None,
-                        help="Import API info from a JSON file instead of the\
-                        API. Used mostly for debugging purposes.")
-
-    # Export to JSON
-    parser.add_argument("--export",
-                        metavar="FILE",
-                        default=None,
-                        help="Export API response to a file as JSON.")
-
-    # EDDN
-    parser.add_argument("--eddn",
-                        action="store_true",
-                        default=False,
-                        help="Post price, shipyards, and outfitting to the \
-                        EDDN.")
-
-    # keys
-    parser.add_argument("--keys",
-                        action="append",
-                        nargs="*",
-                        help="Instead of normal import, display raw API data\
-                        given a set of dictionary keys.")
-
-    # tree
-    parser.add_argument("--tree",
-                        action="store_true",
-                        default=False,
-                        help="Used with --keys. If present will print all\
-                        content below the specificed key.")
-
-    # Hashing CMDR name
-    parser.add_argument("--hash",
-                        action="store_true",
-                        default=False,
-                        help="Obfuscate commander name for EDDN.")
-
-    # Force login
-    parser.add_argument("--login",
-                        action="store_true",
-                        default=False,
-                        help="Clear any cached user login cookies and force\
-                        login. (Doesn't clear the machine token)")
-
-    # Parse the command line.
-    args = parser.parse_args()
-
-    if args.debug:
-        pprint(args)
-
-    return args
-
-
-def convertSecs(seconds):
-    '''
-    Convert a number of seconds to a string.
-    '''
-    if not isinstance(seconds, int):
-        return seconds
-
-    hours = seconds // 3600
-    seconds %= 3600
-    minutes = seconds // 60
-    seconds %= 60
-
-    result = "{:2d}s".format(
-        seconds
-    )
-
-    if minutes or hours:
-        result = "{:2d}m ".format(
-            minutes
-        )+result
-
-    if hours:
-        result = "{:2d}h ".format(
-            hours
-        )+result
-
-    return result
-
-
-# ----------------------------------------------------------------
-# Classes.
-# ----------------------------------------------------------------
-
-# Some fun shell colors.
-class ansiColors:
-    '''
-    Simple class for ansi colors
-    '''
-
-    defaults = {
-        'HEADER': '\033[95m',
-        'OKBLUE': '\033[94m',
-        'OKGREEN': '\033[92m',
-        'WARNING': '\033[93m',
-        'FAIL': '\033[91m',
-        'ENDC': '\033[00m',
-    }
-
-    def __init__(self):
-        if args.nocolor:
-            self.__dict__.update({n: '' for n in ansiColors.defaults.keys()})
-        else:
-            self.__dict__.update(ansiColors.defaults)
-
-
-# ----------------------------------------------------------------
-# Main.
-# ----------------------------------------------------------------
-
-
-def Main():
+def Main(args):
     '''
     Main function.
     '''
@@ -289,7 +40,7 @@ def Main():
             sys.exit()
 
     # Colors
-    c = ansiColors()
+    c = ansiColors(args)
 
     # User specified the --keys option. Use this to display some subset of the
     # API response and exit.
@@ -330,33 +81,11 @@ def Main():
         print(c.FAIL+'Aborting!'+c.ENDC)
         sys.exit(1)
 
-    # Print the commander profile
-    print('Commander:', c.OKGREEN+api.profile['commander']['name']+c.ENDC)
-    print('Credits  : {:>12,d}'.format(api.profile['commander']['credits']))
-    print('Debt     : {:>12,d}'.format(api.profile['commander']['debt']))
-    print("+------------+----------------------+---+")  # NOQA
-    print("|  Rank Type |            Rank Name | # |")  # NOQA
-    print("+------------+----------------------+---+")  # NOQA
-    for rankType in sorted(api.profile['commander']['rank']):
-        rank = api.profile['commander']['rank'][rankType]
-        if rankType in rank_names:
-            try:
-                rankName = rank_names[rankType][rank]
-            except:
-                rankName = "Rank "+str(rank)
-        else:
-            rankName = ''
-        print("| {:>10} | {:>20} | {:1} |".format(
-            rankType,
-            rankName,
-            rank,
-            )
-        )
-    print("+------------+----------------------+---+")  # NOQA
-    print('Docked:', api.profile['commander']['docked'])
+    print_profile(api, c)
 
     system = api.profile['lastSystem']['name']
     station = api.profile['lastStarport']['name']
+
     print('System:', c.OKBLUE+system+c.ENDC)
     print('Station:', c.OKBLUE+station+c.ENDC)
 
@@ -377,102 +106,19 @@ def Main():
             )
 
     # Process the commodities market.
-    eddn_commodities = []
-    if 'commodities' in api.profile['lastStarport']:
-
-        def commodity_int(key):
-            try:
-                ret = int(float(commodity[key])+0.5)
-            except (ValueError, KeyError):
-                ret = 0
-            return ret
-
-        for commodity in api.profile['lastStarport']['commodities']:
-            # Ignore any special categories.
-            if commodity['categoryname'] in cat_ignore:
-                continue
-
-            # Ignore any illegal commodities per schema.
-            if commodity.get('legality', '') != '':
-                continue
-
-            # Add it to the EDDN list.
-            if args.eddn:
-                itemEDDN = {
-                    "name":          commodity['name'],
-                    "meanPrice":     commodity_int('meanPrice'),
-                    "buyPrice":      commodity_int('buyPrice'),
-                    "stock":         commodity_int('stock'),
-                    "stockBracket":  commodity['stockBracket'],
-                    "sellPrice":     commodity_int('sellPrice'),
-                    "demand":        commodity_int('demand'),
-                    "demandBracket": commodity['demandBracket'],
-                }
-                if len(commodity['statusFlags']) > 0:
-                    itemEDDN["statusFlags"] = commodity['statusFlags']
-                eddn_commodities.append(itemEDDN)
+    commodities = parse.get_commodities(api)
 
     # Process the station economies.
-    eddn_economies = []
-    if 'economies' in api.profile['lastStarport']:
-
-        def economy_number(key):
-            try:
-                ret = float(economy[key])
-            except (ValueError, KeyError):
-                ret = 0
-            return ret
-
-        for economy in api.profile['lastStarport']['economies'].values():
-            # Add it to the EDDN list.
-            if args.eddn:
-                itemEDDN = {
-                    "name":         economy['name'],
-                    "proportion":   economy_number('proportion'),
-                }
-                eddn_economies.append(itemEDDN)
+    economies = parse.get_economies(api)
 
     # Process the station prohibited commodities.
-    eddn_prohibited = []
-    if 'prohibited' in api.profile['lastStarport']:
-        if args.eddn:
-            eddn_prohibited = [c for c in api.profile['lastStarport']['prohibited'].values()] #NOQA
+    prohibited = [c for c in api.profile['lastStarport']['prohibited'].values()] #NOQA
 
     # Process shipyard.
-    eddn_ships = []
-    if 'ships' in api.profile['lastStarport']:
-
-        # Ships that can be purchased.
-        if 'shipyard_list' in api.profile['lastStarport']['ships']:
-            if len(api.profile['lastStarport']['ships']['shipyard_list']):
-                for ship in api.profile['lastStarport']['ships']['shipyard_list'].values():  # NOQA
-                    # Add to EDDN.
-                    eddn_ships.append(ship['name'])
-
-        # Ships that are restricted.
-        if 'unavailable_list' in api.profile['lastStarport']['ships']:
-            for ship in api.profile['lastStarport']['ships']['unavailable_list']:  # NOQA
-                # Add to EDDN.
-                eddn_ships.append(ship['name'])
+    ships = parse.get_ships(api)
 
     # Process outfitting.
-    eddn_modules = []
-    if 'modules' in api.profile['lastStarport']:
-        # For EDDN, only add non-commander specific items that can be
-        # purchased.
-        # https://github.com/EDSM-NET/EDDN/wiki
-        for module in api.profile['lastStarport']['modules'].values():
-            if (
-                module.get('sku', None) in (
-                    None,
-                    'ELITE_HORIZONS_V_PLANETARY_LANDINGS'
-                ) and
-                (
-                    module['name'].startswith(('Hpt_', 'Int_')) or
-                    module['name'].find('_Armour_') > 0
-                )
-            ):
-                eddn_modules.append(module['name'])
+    modules = parse.get_modules(api)
 
     # Publish to EDDN
     if args.eddn:
@@ -485,31 +131,17 @@ def Main():
         )
         con._debug = args.debug
 
-        if eddn_commodities:
+        if commodities:
             print('Posting commodities to EDDN...')
-            con.publishCommodities(
-                system,
-                station,
-                eddn_commodities,
-                eddn_economies,
-                eddn_prohibited,
-            )
+            con.publishCommodities(system, station, commodities, economies, prohibited)
 
-        if eddn_ships:
+        if ships:
             print('Posting shipyard to EDDN...')
-            con.publishShipyard(
-                system,
-                station,
-                sorted(eddn_ships)
-            )
+            con.publishShipyard(system, station, ships)
 
-        if eddn_modules:
+        if modules:
             print('Posting outfitting to EDDN...')
-            con.publishOutfitting(
-                system,
-                station,
-                sorted(eddn_modules)
-            )
+            con.publishOutfitting(system, station, modules)
 
     # No errors.
     return False
@@ -525,14 +157,14 @@ if __name__ == "__main__":
 
     try:
         # Parse any command line arguments.
-        args = parse_args()
+        args = parse_args(__version__)
 
         # Command line overrides
         if args.debug is True:
             print('***** Debug mode *****')
 
         # Execute the Main() function and return results.
-        sys.exit(Main())
+        sys.exit(Main(args))
     except SystemExit as e:
         # Clean exit, provide a return code.
         sys.exit(e.code)
